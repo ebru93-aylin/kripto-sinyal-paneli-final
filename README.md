@@ -1,1 +1,2 @@
-# kripto-sinyal-paneli-final
+# Kripto Sinyal Paneli FINAL
+Streamlit + CoinGecko + Telegram + AI sinyal açıklamaları içerir.
