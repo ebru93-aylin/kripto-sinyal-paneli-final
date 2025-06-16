@@ -1,10 +1,12 @@
+import streamlit as st
 import pandas as pd
 import requests
 from datetime import datetime
 
+# Sayfa ayarı – mutlaka en üstte
 st.set_page_config(page_title="Kripto Sinyal Paneli", layout="wide")
-st.title("📊 Kripto Sinyal Paneli – AI + Teknik + Fiyat + Telegram")
 
+# Telegram ayarları
 TELEGRAM_TOKEN = "7757372996:AAGOzECzHvllRSWBZ_1h-JTmU4i58yMrDBA"
 CHAT_ID = "694298537"
 
@@ -33,7 +35,8 @@ def get_history(coin_id, days):
         return df
     return pd.DataFrame()
 
-
+# Başlık
+st.title("📊 Kripto Sinyal Paneli – AI + Teknik + Telegram")
 
 coins = {
     "pepe": "PEPE",
@@ -45,11 +48,11 @@ coins = {
 }
 
 coin_id = st.selectbox("Coin Seç", list(coins.keys()))
-fetch_prices = st.checkbox("Canlı fiyat verisi (CoinGecko)", value=True)
+fetch_prices = st.checkbox("CoinGecko'dan fiyat verisi çek", value=True)
 
 if fetch_prices:
     price = get_price(coin_id)
-    st.metric("Şu anki fiyat", f"${price}")
+    st.metric("🔹 Şu anki fiyat", f"${price}")
     df_day = get_history(coin_id, 1)
     df_week = get_history(coin_id, 7)
     if not df_day.empty:
@@ -59,9 +62,10 @@ if fetch_prices:
     open_price = df_day["price"].iloc[0]
     close_price = df_day["price"].iloc[-1]
 else:
-    open_price = st.number_input("Açılış", min_value=0.0)
-    close_price = st.number_input("Kapanış", min_value=0.0)
+    open_price = st.number_input("Açılış Fiyatı", min_value=0.0)
+    close_price = st.number_input("Kapanış Fiyatı", min_value=0.0)
 
+# Göstergeler
 rsi = st.slider("RSI", 0, 100, 50)
 macd = st.number_input("MACD")
 ao = st.number_input("Awesome Oscillator")
@@ -69,16 +73,41 @@ wt = st.number_input("WaveTrend")
 supertrend = st.selectbox("Supertrend", ["Buy", "Sell", "None"])
 chandelier = st.selectbox("Chandelier Exit", ["Buy", "Sell", "None"])
 
+# AI destekli sinyal
 signal = "BEKLE"
+explanation = ""
+strategy = ""
+
 if rsi < 30 and macd > 0 and ao > 0 and supertrend == "Buy":
     signal = "AL"
+    explanation = "RSI düşük, MACD ve AO pozitif. Supertrend Buy."
+    strategy = "Yükseliş teyitli. Giriş fırsatı olabilir."
 elif rsi > 70 and macd < 0 and ao < 0 and chandelier == "Sell":
     signal = "SAT"
+    explanation = "RSI yüksek, MACD ve AO negatif. Chandelier Sell."
+    strategy = "Düşüş riski. Kâr alımı yapılabilir."
+else:
+    explanation = "Kararsız görünüm. Net sinyal yok."
+    strategy = "Beklemede kalmak mantıklı."
+
+change_pct = ((close_price - open_price) / open_price * 100) if open_price else 0
+st.metric("📊 Günlük % Değişim", f"{change_pct:.2f}%")
 
 st.subheader(f"📍 Sinyal: {signal}")
-note = st.text_area("Notlar")
+st.info(f"🧠 AI Açıklama: {explanation}")
+st.success(f"🎯 Strateji: {strategy}")
 
-if st.button("Telegram'a Gönder"):
-    message = f"{coins[coin_id]} SINYAL: {signal}\nRSI: {rsi} | MACD: {macd}\nAO: {ao} | WT: {wt}\nSupertrend: {supertrend} | Chandelier: {chandelier}\nAçılış: {open_price} Kapanış: {close_price}"
+note = st.text_area("🗒️ Notlar")
+
+if st.button("📨 Telegram'a Gönder"):
+    message = f"""
+📌 {coins[coin_id]} SINYALİ: {signal}
+📈 Açılış: ${open_price:.4f}
+📉 Kapanış: ${close_price:.4f}
+🔁 Değişim: {change_pct:.2f}%
+🧠 Açıklama: {explanation}
+🎯 Strateji: {strategy}
+"""
     send_telegram(message)
-    st.success("📨 Telegram’a gönderildi.")
+    st.success("Telegram’a gönderildi ✅")
+
