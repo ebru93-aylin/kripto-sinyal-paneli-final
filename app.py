@@ -1,10 +1,10 @@
-# app.py: Kripto Sinyal Paneli
-# Tüm teknik analiz, CoinGecko API ve Telegram entegrasyonu bu dosyada yer alır.,import streamlit as st
 import pandas as pd
 import requests
 from datetime import datetime
 
-# Telegram Ayarları
+st.set_page_config(page_title="Kripto Sinyal Paneli", layout="wide")
+st.title("📊 Kripto Sinyal Paneli – AI + Teknik + Fiyat + Telegram")
+
 TELEGRAM_TOKEN = "7757372996:AAGOzECzHvllRSWBZ_1h-JTmU4i58yMrDBA"
 CHAT_ID = "694298537"
 
@@ -33,8 +33,7 @@ def get_history(coin_id, days):
         return df
     return pd.DataFrame()
 
-st.set_page_config(page_title="Kripto Sinyal Paneli", layout="wide")
-st.title("📊 Kripto Sinyal Paneli – AI + Teknik + Fiyat + Telegram")
+
 
 coins = {
     "pepe": "PEPE",
